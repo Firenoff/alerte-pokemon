@@ -1,0 +1,37 @@
+name: Surveiller Pokemon 30 ans
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # relance toutes les heures (chaque exécution tourne ~58 min)
+  workflow_dispatch:       # bouton "Run workflow" pour lancer à la main
+
+concurrency:
+  group: surveillance
+  cancel-in-progress: false
+
+jobs:
+  surveiller:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+
+      # Mémoire entre deux exécutions (pour n'alerter que sur les changements).
+      - uses: actions/cache/restore@v4
+        with:
+          path: etat_30ans.tsv
+          key: etat-${{ github.run_id }}
+          restore-keys: etat-
+
+      - name: Surveiller les 5 boutiques
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          DUREE_MAX: "3480"
+          NOTIF_DEMARRAGE: "0"
+        run: bash surveiller_30ans.sh
+
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: etat_30ans.tsv
+          key: etat-${{ github.run_id }}
