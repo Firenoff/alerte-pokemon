@@ -1,0 +1,14 @@
+name: Tester la notification
+
+on:
+  workflow_dispatch:   # bouton "Run workflow" pour envoyer une notification de test
+
+jobs:
+  tester:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Envoyer une notification de test
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: bash surveiller_30ans.sh --test
